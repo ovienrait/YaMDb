@@ -1,17 +1,22 @@
-"""Класс представлений проиложения Users."""
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, generics, status, views
+
+from rest_framework import viewsets, filters, generics, status, views
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework_simplejwt.tokens import AccessToken
 
-from .models import CustomUser
+
+from users.models import CustomUser
+from reviews.models import Genre, Category, Title
 from .permissions import IsAdminOnly
-from .serializers import AdminSerializer, UserSerializer, UserSignUpSerializer
+from .mixins import ListCreateDestroyViewSet
+from .serializers import (
+    AdminSerializer, UserSerializer, UserSignUpSerializer,
+    GenreSerializer, CategorySerializer, TitleGETSerializer, TitleSerializer)
 
 
 class UserSignupAPI(views.APIView):
@@ -22,18 +27,18 @@ class UserSignupAPI(views.APIView):
     def create_code_send_mail(self, request):
         """Метод генерации кода и отсылки сообщения."""
         confirmation_code = default_token_generator.make_token(
-                get_object_or_404(
-                    CustomUser, username=request.data['username']
-                ))
+            get_object_or_404(
+                CustomUser, username=request.data['username']
+            ))
         send_mail(
-             subject='Регистрация пользователя',
-             message=('Для получения токена перейдите по адресу'
-                      '/api/v1/auth/token/ и введите код подтверждения'
-                      f' confirmation_code: {confirmation_code}'),
-             from_email='api_yamdb@example.com',
-             recipient_list=[f'{request.data["email"]}'],
-             fail_silently=True,
-            )
+            subject='Регистрация пользователя',
+            message=('Для получения токена перейдите по адресу'
+                     '/api/v1/auth/token/ и введите код подтверждения'
+                     f' confirmation_code: {confirmation_code}'),
+            from_email='api_yamdb@example.com',
+            recipient_list=[f'{request.data["email"]}'],
+            fail_silently=True,
+        )
 
     def post(self, request):
         """Метод для обработки пост запроса на регистрацию."""
@@ -55,7 +60,7 @@ class UserSignupAPI(views.APIView):
             )
         if request.data['username'] == 'me':
             return Response(
-             ['Выберите другое имя.'], status=status.HTTP_400_BAD_REQUEST
+                ['Выберите другое имя.'], status=status.HTTP_400_BAD_REQUEST
             )
         serializer = UserSignUpSerializer(data=request.data)
         if serializer.is_valid():
@@ -72,14 +77,13 @@ class UserObtainTokenAPI(views.APIView):
 
     def post(self, request):
         """Метод обработки пост запроса на получение токена."""
-        if (not request.data or
-           request.data.get('username') is None):
+        if not request.data or request.data.get('username') is None:
             raise ValidationError(f"{['username']}")
         user = get_object_or_404(
             CustomUser, username=request.data.get('username')
         )
         if default_token_generator.check_token(
-         user, request.data['confirmation_code']):
+                user, request.data['confirmation_code']):
             token = AccessToken.for_user(user)
             return Response({'token': f'{token}'}, status=status.HTTP_200_OK)
         return Response(
@@ -127,3 +131,26 @@ class AdminDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAdminOnly,)
     lookup_field = 'username'
     http_method_names = ('get', 'patch', 'delete',)
+
+
+class GenreViewSet(ListCreateDestroyViewSet):
+    """Обработчик объектов модели жанров"""
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+
+
+class CategoryViewSet(ListCreateDestroyViewSet):
+    """Обработчик объектов модели категорий"""
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+
+class TitleViewSet(viewsets.ModelViewSet):
+    """Обработчик объектов модели произведений"""
+    queryset = Title.objects.all()
+    serializer_class = TitleSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return TitleGETSerializer
+        return TitleSerializer

@@ -1,7 +1,7 @@
 """Модуль пользовательских разрешений."""
 from rest_framework import permissions
 
-from .models import CustomUser
+from users.models import CustomUser
 
 
 class IsAdminOnly(permissions.BasePermission):
@@ -13,10 +13,9 @@ class IsAdminOnly(permissions.BasePermission):
 
         Является ли пользователь админом или суперпользователем.
         """
-        return (
-            request.user.is_authenticated and
-            (CustomUser.objects.get(id=request.user.id).role == 'admin' or
-             CustomUser.objects.get(id=request.user.id).is_superuser == 1)
+        return request.user.is_authenticated and (
+            CustomUser.objects.get(id=request.user.id).role == 'admin' or (
+                CustomUser.objects.get(id=request.user.id).is_superuser == 1)
         )
 
 
@@ -25,7 +24,6 @@ class IsModerator(permissions.BasePermission):
 
     def has_permission(self, request, view):
         """Метод проверки является ли пользователь модератором."""
-        return (
-            request.user.is_authenticated and
+        return request.user.is_authenticated and (
             CustomUser.objects.get(id=request.user.id).role == 'moderator'
         )
