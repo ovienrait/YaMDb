@@ -1,8 +1,10 @@
 import re
 from rest_framework import serializers
+from django.core.validators import MaxLengthValidator
 
 from reviews.models import Genre, Category, Title
-from users.models import User
+from users.models import User, roles
+from .validators import username_validator, unique_username_validator
 
 
 class SignUpSerializer(serializers.Serializer):
@@ -30,10 +32,57 @@ class TokenObtainSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """Класс сериализатора для пользователя."""
+
+    role = serializers.ChoiceField(
+        choices=roles, required=False, read_only=True
+    )
+    password = serializers.CharField(
+        max_length=128,
+        min_length=8,
+        write_only=True,
+        required=False,
+    )
+    username = serializers.CharField(
+        validators=[username_validator, MaxLengthValidator(150),
+                    unique_username_validator],
+    )
+
     class Meta:
+        """Внутренний класс сериализатора."""
+
         model = User
-        fields = (
-            'username', 'email', 'first_name', 'last_name', 'bio', 'role')
+        fields = ('username', 'email', 'password',
+                  'first_name', 'last_name', 'bio', 'role',)
+
+
+class AdminSerializer(serializers.ModelSerializer):
+    """Класс сериализатора для админа."""
+
+    role = serializers.ChoiceField(
+        choices=roles, required=False,
+    )
+    is_staff = serializers.BooleanField(
+        required=False,
+        write_only=True,
+    )
+    password = serializers.CharField(
+        max_length=128,
+        min_length=8,
+        write_only=True,
+        required=False,
+    )
+    username = serializers.CharField(
+        validators=[username_validator, MaxLengthValidator(150),
+                    unique_username_validator],
+    )
+
+    class Meta:
+        """Внутренний класс сериализатора."""
+
+        model = User
+        fields = ('username', 'email', 'is_staff', 'password',
+                  'first_name', 'last_name', 'bio', 'role',)
 
 
 class GenreSerializer(serializers.ModelSerializer):

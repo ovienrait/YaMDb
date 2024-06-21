@@ -1,52 +1,29 @@
+"""Модуль пользовательских разрешений."""
 from rest_framework import permissions
-from rest_framework.permissions import SAFE_METHODS, BasePermission
+
+from users.models import User
 
 
-class OwnerOrAdmins(permissions.BasePermission):
-
-    def has_permission(self, request, view):
-        return (
-            request.user.is_authenticated
-            and (
-                request.user.is_admin
-                or request.user.is_superuser)
-        )
-
-    def has_object_permission(self, request, view, obj):
-        return (
-            obj == request.user
-            or request.user.is_admin
-            or request.user.is_superuser)
-
-
-class IsAdminOrReadOnly(BasePermission):
-    """Разрешение на уровне админ."""
+class IsAdminOnly(permissions.BasePermission):
+    """Класс пользовательского разрешения."""
 
     def has_permission(self, request, view):
-        return (
-            request.method in SAFE_METHODS
-            or (
-                request.user.is_authenticated
-                and request.user.is_admin
-            )
+        """
+        Метод проверки.
+
+        Является ли пользователь админом или суперпользователем.
+        """
+        return request.user.is_authenticated and (
+            User.objects.get(id=request.user.id).role == 'admin' or (
+                User.objects.get(id=request.user.id).is_superuser == 1)
         )
 
 
-class AuthorAndStaffOrReadOnly(BasePermission):
-    def has_permission(self, request, view):
-        return (
-            request.method in SAFE_METHODS
-            or request.user.is_authenticated
-        )
+class IsModerator(permissions.BasePermission):
+    """Класс пользовательского разрешения."""
 
-    def has_object_permission(self, request, view, obj):
-        return (
-            request.method in SAFE_METHODS
-            or (
-                request.user.is_authenticated
-                and (
-                    obj.author == request.user
-                    or request.user.is_moderator
-                )
-            )
+    def has_permission(self, request, view):
+        """Метод проверки является ли пользователь модератором."""
+        return request.user.is_authenticated and (
+            User.objects.get(id=request.user.id).role == 'moderator'
         )

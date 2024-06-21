@@ -1,21 +1,23 @@
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
-from rest_framework import viewsets, status, generics
+from rest_framework import viewsets, status, generics, filters
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.pagination import PageNumberPagination
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated
 
 from reviews.models import Genre, Category, Title
 from users.models import User
 from .serializers import (
-    SignUpSerializer, TokenObtainSerializer, UserSerializer,
+    SignUpSerializer, TokenObtainSerializer, UserSerializer, AdminSerializer,
     GenreSerializer, CategorySerializer, TitleGETSerializer, TitleSerializer)
 from .mixins import ListCreateDestroyViewSet
 from .utils import (
     generate_confirmation_code, check_confirmation_code,
     send_email_confirmation_code)
+from .permissions import IsAdminOnly
 
 
 class GenreViewSet(ListCreateDestroyViewSet):
@@ -128,20 +130,26 @@ class UserRetrieveUpdateAPI(APIView):
         serializer = UserSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AdminCreateList(generics.ListCreateAPIView):
     """Класс создания пользователя и получения списка пользователей админом."""
+
     queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = (IsAdminUser,)
+    serializer_class = AdminSerializer
+    permission_classes = (IsAdminOnly,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
+    pagination_class = PageNumberPagination
 
 
 class AdminDetail(generics.RetrieveUpdateDestroyAPIView):
     """Класс получения/обновления/удаления профиля пользователя админом."""
+
     queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = (IsAdminUser,)
+    serializer_class = AdminSerializer
+    permission_classes = (IsAdminOnly,)
     lookup_field = 'username'
+    http_method_names = ('get', 'patch', 'delete',)
