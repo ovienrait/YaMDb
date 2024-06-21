@@ -18,3 +18,8 @@ class CustomUser(AbstractUser):
         'Роль', max_length=16, choices=ROLE_CHOICES, default='user'
     )
     REQUIRED_FIELDS = ('email',)
+
+    class Meta:
+        """Класс для сортировки объектов модели."""
+
+        ordering = ('id',)

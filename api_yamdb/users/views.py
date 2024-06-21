@@ -38,17 +38,16 @@ class UserSignupAPI(views.APIView):
     def post(self, request):
         """Метод для обработки пост запроса на регистрацию."""
         if not request.data:
-            raise ValidationError("Fields 'email', 'username' is required.")
+            raise ValidationError({'email': ['This field is required.'],
+                                   'username': ['This field is required.']})
         if request.data.get('username') is None:
-            raise ValidationError("Field 'username' is required.")
+            raise ValidationError({'username': ['This field is required.'], })
         if request.data.get('email') is None:
-            raise ValidationError("Field 'email' is required.")
-            #return Response(
-            #    [f"{['username', 'email']} is required."],
-            #    status=status.HTTP_400_BAD_REQUEST
-            #)
-        if CustomUser.objects.filter(username=request.data.get('username'),
-                                     email=request.data.get('email')).exists():
+            raise ValidationError({'email': ['This field is required.'], })
+        if CustomUser.objects.filter(
+                username=request.data.get('username'),
+                email=request.data.get('email')
+        ).exists():
             self.create_code_send_mail(request=request)
             return Response(
                 ['Вам отправлено письмо с кодом подтверждения.'],
@@ -56,7 +55,7 @@ class UserSignupAPI(views.APIView):
             )
         if request.data['username'] == 'me':
             return Response(
-                ['Выберите другое имя.'], status=status.HTTP_400_BAD_REQUEST
+             ['Выберите другое имя.'], status=status.HTTP_400_BAD_REQUEST
             )
         serializer = UserSignUpSerializer(data=request.data)
         if serializer.is_valid():

@@ -1,8 +1,8 @@
 """Модуль маршрутизатора приложения Users."""
 from django.urls import path
 
-from .views import (UserObtainTokenAPI, UserRetrieveUpdateAPI, UserSignupAPI,
-                    AdminCreateList, AdminDetail)
+from .views import (AdminCreateList, AdminDetail,
+                    UserObtainTokenAPI, UserRetrieveUpdateAPI, UserSignupAPI)
 
 urlpatterns = [
     path('auth/signup/', UserSignupAPI.as_view()),
