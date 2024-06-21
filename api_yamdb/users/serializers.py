@@ -41,6 +41,10 @@ class AdminSerializer(serializers.ModelSerializer):
     role = serializers.ChoiceField(
         choices=ROLE_CHOICES, required=False,
     )
+    is_staff = serializers.BooleanField(
+        required=False,
+        write_only=True,
+        )
     password = serializers.CharField(
         max_length=128,
         min_length=8,
@@ -52,5 +56,5 @@ class AdminSerializer(serializers.ModelSerializer):
         """Внутренний класс сериализатора."""
 
         model = CustomUser
-        fields = ('username', 'email', 'password',
+        fields = ('username', 'email', 'is_staff', 'password',
                   'first_name', 'last_name', 'bio', 'role',)

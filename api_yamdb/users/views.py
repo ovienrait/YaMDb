@@ -3,11 +3,14 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, generics, status, views
-from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.serializers import ValidationError
 from rest_framework_simplejwt.tokens import AccessToken
 
 from .models import CustomUser
+from .permissions import IsAdminOnly
 from .serializers import AdminSerializer, UserSerializer, UserSignUpSerializer
 
 
@@ -34,15 +37,18 @@ class UserSignupAPI(views.APIView):
 
     def post(self, request):
         """Метод для обработки пост запроса на регистрацию."""
-        serializer = UserSignUpSerializer(data=request.data)
-        print(request.data)
         if not request.data:
-            return Response(
-                ["'username', 'email' is required."],
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        if CustomUser.objects.filter(username=request.data['username'],
-                                     email=request.data['email']).exists():
+            raise ValidationError("Fields 'email', 'username' is required.")
+        if request.data.get('username') is None:
+            raise ValidationError("Field 'username' is required.")
+        if request.data.get('email') is None:
+            raise ValidationError("Field 'email' is required.")
+            #return Response(
+            #    [f"{['username', 'email']} is required."],
+            #    status=status.HTTP_400_BAD_REQUEST
+            #)
+        if CustomUser.objects.filter(username=request.data.get('username'),
+                                     email=request.data.get('email')).exists():
             self.create_code_send_mail(request=request)
             return Response(
                 ['Вам отправлено письмо с кодом подтверждения.'],
@@ -52,10 +58,11 @@ class UserSignupAPI(views.APIView):
             return Response(
                 ['Выберите другое имя.'], status=status.HTTP_400_BAD_REQUEST
             )
+        serializer = UserSignUpSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             self.create_code_send_mail(request=request)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -66,7 +73,12 @@ class UserObtainTokenAPI(views.APIView):
 
     def post(self, request):
         """Метод обработки пост запроса на получение токена."""
-        user = get_object_or_404(CustomUser, username=request.data['username'])
+        if (not request.data or
+           request.data.get('username') is None):
+            raise ValidationError(f"{['username']}")
+        user = get_object_or_404(
+            CustomUser, username=request.data.get('username')
+        )
         if default_token_generator.check_token(
          user, request.data['confirmation_code']):
             token = AccessToken.for_user(user)
@@ -93,7 +105,7 @@ class UserRetrieveUpdateAPI(views.APIView):
         serializer = UserSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -102,9 +114,10 @@ class AdminCreateList(generics.ListCreateAPIView):
 
     queryset = CustomUser.objects.all()
     serializer_class = AdminSerializer
-    permission_classes = (IsAdminUser,)
-    filter_backends = (filters.SearchFilter)
+    permission_classes = (IsAdminOnly,)
+    filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
+    pagination_class = PageNumberPagination
 
 
 class AdminDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -112,5 +125,6 @@ class AdminDetail(generics.RetrieveUpdateDestroyAPIView):
 
     queryset = CustomUser.objects.all()
     serializer_class = AdminSerializer
-    permission_classes = (IsAdminUser,)
+    permission_classes = (IsAdminOnly,)
     lookup_field = 'username'
+    http_method_names = ('get', 'patch', 'delete',)

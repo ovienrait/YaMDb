@@ -12,7 +12,6 @@ ROLE_CHOICES = (
 class CustomUser(AbstractUser):
     """Пользовательская модель приложения."""
 
-    #username = models.CharField(max_length=150, unique=True, blank=False)
     email = models.EmailField(max_length=254, unique=True, blank=False)
     bio = models.TextField('Биография', blank=True)
     role = models.CharField(
