@@ -22,7 +22,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class TitleGETSerializer(serializers.ModelSerializer):
     """Сериализатор для модели произведений при GET-запросе"""
-    genre = GenreSerializer(many=True)
+    genre = GenreSerializer(many=True, required=False)
     category = CategorySerializer()
 
     class Meta:
@@ -45,6 +45,13 @@ class TitleSerializer(serializers.ModelSerializer):
         model = Title
         fields = (
             'id', 'name', 'year', 'description', 'genre', 'category')
+
+    def validate_name(self, value):
+        if len(value) > 256:
+            raise serializers.ValidationError(
+                'Название произведения не может быть '
+                'длиннее 256 символов.')
+        return value
 
 
 class UserSignUpSerializer(serializers.ModelSerializer):

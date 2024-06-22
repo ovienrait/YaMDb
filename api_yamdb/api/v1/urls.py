@@ -6,9 +6,9 @@ from .views import (
     UserSignupAPI, GenreViewSet, CategoryViewSet, TitleViewSet)
 
 router = DefaultRouter()
-router.register('genres', GenreViewSet)
-router.register('categories', CategoryViewSet)
-router.register('titles', TitleViewSet)
+router.register('genres', GenreViewSet, basename='genres')
+router.register('categories', CategoryViewSet, basename='categories')
+router.register('titles', TitleViewSet, basename='titles')
 
 urlpatterns = [
     path('auth/signup/', UserSignupAPI.as_view()),

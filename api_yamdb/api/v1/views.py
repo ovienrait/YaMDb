@@ -1,6 +1,7 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import viewsets, filters, generics, status, views
 from rest_framework.pagination import PageNumberPagination
@@ -8,11 +9,13 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.decorators import action
 
 
 from users.models import CustomUser
 from reviews.models import Genre, Category, Title
-from .permissions import IsAdminOnly
+from .permissions import IsAdminOnly, IsAdminOrReadOnly
+from .filters import TitleFilter
 from .mixins import ListCreateDestroyViewSet
 from .serializers import (
     AdminSerializer, UserSerializer, UserSignUpSerializer,
@@ -137,20 +140,61 @@ class GenreViewSet(ListCreateDestroyViewSet):
     """Обработчик объектов модели жанров"""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+
+    def get_permissions(self):
+        if self.action == 'create':
+            self.permission_classes = (IsAdminOnly,)
+        return super().get_permissions()
+
+    @action(
+        detail=False, methods=['delete'],
+        url_path='(?P<slug>[^/.]+)',
+        permission_classes=(IsAdminOnly,))
+    def delete_by_slug(self, request, slug=None):
+        genre = get_object_or_404(Genre, slug=slug)
+        genre.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CategoryViewSet(ListCreateDestroyViewSet):
     """Обработчик объектов модели категорий"""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+
+    def get_permissions(self):
+        if self.action == 'create':
+            self.permission_classes = (IsAdminOnly,)
+        return super().get_permissions()
+
+    @action(
+        detail=False, methods=['delete'],
+        url_path='(?P<slug>[^/.]+)',
+        permission_classes=(IsAdminOnly,))
+    def delete_by_slug(self, request, slug=None):
+        category = get_object_or_404(Category, slug=slug)
+        category.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Обработчик объектов модели произведений"""
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
+    permission_classes = (IsAdminOrReadOnly,)
+    pagination_class = PageNumberPagination
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = TitleFilter
+
+    def update(self, request, *args, **kwargs):
+        if request.method == 'PUT':
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return super().update(request, *args, **kwargs)
 
     def get_serializer_class(self):
-        if self.request.method == 'GET':
+        if self.action in ['list', 'retrieve']:
             return TitleGETSerializer
         return TitleSerializer

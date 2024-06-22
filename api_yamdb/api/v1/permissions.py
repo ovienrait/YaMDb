@@ -27,3 +27,15 @@ class IsModerator(permissions.BasePermission):
         return request.user.is_authenticated and (
             CustomUser.objects.get(id=request.user.id).role == 'moderator'
         )
+
+
+class IsAdminOrReadOnly(permissions.BasePermission):
+    """Класс пользовательского разрешения."""
+
+    def has_permission(self, request, view):
+        if request.user.id:
+            return CustomUser.objects.get(
+                id=request.user.id).role == 'admin' or (
+                CustomUser.objects.get(id=request.user.id).is_superuser == 1)
+        else:
+            return request.method in permissions.SAFE_METHODS
