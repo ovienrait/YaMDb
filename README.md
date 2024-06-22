@@ -25,7 +25,7 @@
 - Обновляем pip - `python3 -m pip install --upgrade pip`
 - Устанавливаем зависимости - `pip install -r requirements.txt`
 ### 4. Выполнить миграции:
-- Если вы в корне перейдите в директорию - `cd yatube_api`
+- Если вы в корне перейдите в директорию - `cd api_yamdb`
 - Запускаем миграции - `python3 manage.py migrate`
 ### 5. Запустить проект:
 `python3 manage.py runserver`
