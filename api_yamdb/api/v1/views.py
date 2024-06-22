@@ -1,11 +1,13 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import viewsets, filters, generics, status, views
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import (
+    AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework_simplejwt.tokens import AccessToken
@@ -13,13 +15,14 @@ from rest_framework.decorators import action
 
 
 from users.models import CustomUser
-from reviews.models import Genre, Category, Title
-from .permissions import IsAdminOnly, IsAdminOrReadOnly
+from reviews.models import Genre, Category, Title, Review
+from .permissions import IsAdminOnly, IsAdminOrReadOnly, IsOwnerOrReadOnly
 from .filters import TitleFilter
 from .mixins import ListCreateDestroyViewSet
 from .serializers import (
     AdminSerializer, UserSerializer, UserSignUpSerializer,
-    GenreSerializer, CategorySerializer, TitleGETSerializer, TitleSerializer)
+    GenreSerializer, CategorySerializer, TitleGETSerializer, TitleSerializer,
+    ReviewSerializer, CommentSerializer)
 
 
 class UserSignupAPI(views.APIView):
@@ -182,7 +185,7 @@ class CategoryViewSet(ListCreateDestroyViewSet):
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Обработчик объектов модели произведений"""
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = PageNumberPagination
@@ -198,3 +201,59 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action in ['list', 'retrieve']:
             return TitleGETSerializer
         return TitleSerializer
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    """Обработчик объектов модели комментариев"""
+    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly,)
+    serializer_class = CommentSerializer
+
+    def update(self, request, *args, **kwargs):
+        if request.method == 'PUT':
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return super().update(request, *args, **kwargs)
+
+    def get_queryset(self):
+        review = get_object_or_404(
+            Review,
+            id=self.kwargs.get('review_id')
+        )
+        return review.comments.all()
+
+    def perform_create(self, serializer):
+        review = get_object_or_404(
+            Review,
+            id=self.kwargs.get('review_id')
+        )
+        serializer.save(
+            author=self.request.user,
+            review=review
+        )
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    """Обработчик объектов модели отзывов"""
+    serializer_class = ReviewSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
+
+    def update(self, request, *args, **kwargs):
+        if request.method == 'PUT':
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return super().update(request, *args, **kwargs)
+
+    def get_queryset(self):
+        title = get_object_or_404(
+            Title,
+            id=self.kwargs.get('title_id')
+        )
+        return title.reviews.all()
+
+    def perform_create(self, serializer):
+        title = get_object_or_404(
+            Title,
+            id=self.kwargs.get('title_id')
+        )
+        serializer.save(
+            author=self.request.user,
+            title=title
+        )

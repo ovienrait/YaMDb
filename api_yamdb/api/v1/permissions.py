@@ -39,3 +39,15 @@ class IsAdminOrReadOnly(permissions.BasePermission):
                 CustomUser.objects.get(id=request.user.id).is_superuser == 1)
         else:
             return request.method in permissions.SAFE_METHODS
+
+
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    """Класс пользовательского разрешения"""
+
+    def has_object_permission(self, request, view, obj):
+        """Метод проверки является ли пользователь автором."""
+        return (
+            request.method in permissions.SAFE_METHODS
+            or obj.author == request.user or (
+                request.user.role == 'moderator' or (
+                    request.user.role == 'admin')))
