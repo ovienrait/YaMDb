@@ -44,6 +44,24 @@ class TitleGenreAdmin(admin.ModelAdmin):
     search_fields = ('title', 'genre')
 
 
+class ReviewAdmin(admin.ModelAdmin):
+    """Класс настройки раздела отзывов."""
+    list_display = (
+        'pk','author','text','score','pub_date','title')
+    list_filter = ('author', 'score', 'pub_date')
+    list_per_page = OBJECTS_PER_PAGE
+    search_fields = ('author',)
+
+
+class CommentAdmin(admin.ModelAdmin):
+    """Класс настройки раздела комментариев."""
+    list_display = (
+        'pk','author','text','pub_date','review')
+    list_filter = ('author', 'pub_date')
+    list_per_page = OBJECTS_PER_PAGE
+    search_fields = ('author',)
+
+
 admin.site.register(Genre, GenreAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Title, TitleAdmin)
