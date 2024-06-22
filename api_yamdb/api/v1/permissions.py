@@ -27,3 +27,13 @@ class IsModerator(permissions.BasePermission):
         return request.user.is_authenticated and (
             CustomUser.objects.get(id=request.user.id).role == 'moderator'
         )
+
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    """Класс пользовательского разрешения"""
+
+    def has_object_permission(self, request, view, obj):
+        """Метод проверки является ли пользователь автором."""
+        return bool(
+            request.method in permissions.SAFE_METHODS
+            or obj.author == request.user
+        )

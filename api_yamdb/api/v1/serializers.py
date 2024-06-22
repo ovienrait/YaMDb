@@ -1,8 +1,8 @@
 from rest_framework import serializers
 
 from users.models import ROLE_CHOICES, CustomUser
-from reviews.models import Genre, Category, Title
-
+from reviews.models import Genre, Category, Title, Comment, Review
+from django.shortcuts import get_object_or_404
 
 class GenreSerializer(serializers.ModelSerializer):
     """Сериализатор для модели жанров"""
@@ -101,3 +101,45 @@ class AdminSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ('username', 'email', 'is_staff', 'password',
                   'first_name', 'last_name', 'bio', 'role',)
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    """Класс сериализатора для коментариев."""
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username'
+    )
+    review = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        fields = '__all__'
+        model = Comment
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    """Класс сериализатора для отзывов."""
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username'
+    )
+    score = serializers.IntegerField()
+    title = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    def validate(self, value):
+        author = self.context['request'].user
+        title_id = (self.context['request'].
+                    parser_context['kwargs'].get('title_id'))
+        title = get_object_or_404(
+            Title,
+            id=title_id
+        )
+        if (self.context['request'].method == 'POST'
+                and title.reviews.filter(author=author).exists()):
+            raise serializers.ValidationError(
+                f'Отзыв на произведение {title.name} уже существует'
+            )
+        return value
+
+    class Meta:
+        fields = '__all__'
+        model = Review
