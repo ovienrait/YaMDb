@@ -71,6 +71,12 @@ Now you are ready to use our API through any of web or desktop platform for your
 
 ## Contact
 
-Artem Maksimov - [@ovienrait](https://t.me/ovienrait) - [nirendsound@gmail.com](https://nirendsound@gmail.com)
+### Devs team:
+
+* Artem Maksimov - [github](https://github.com/ArtemMaksimov-trial) - [@ovienrait](https://t.me/ovienrait) - [nirendsound@gmail.com](https://nirendsound@gmail.com)
+
+* Vadim Volkov - [github](https://github.com/VadimVolkov87)
+
+* Danil Dmitriev - [github](https://github.com/greyhayre)
 
 Project Link: [API YaMDb](https://github.com/ArtemMaksimov-trial/api_yamdb.git)

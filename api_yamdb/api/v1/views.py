@@ -6,7 +6,6 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import filters, generics, status, views, viewsets
-from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
@@ -18,7 +17,7 @@ from reviews.models import Category, Genre, Review, Title
 from users.models import CustomUser
 
 from .filters import TitleFilter
-from .mixins import ListCreateDestroyViewSet
+from .mixins import ListCreateDestroyViewSet, DeleteBySlugMixin
 from .permissions import IsAdminOnly, IsAdminOrReadOnly, IsOwnerOrReadOnly
 from .serializers import (AdminSerializer, CategorySerializer,
                           CommentSerializer, GenreSerializer,
@@ -141,54 +140,26 @@ class AdminDetail(generics.RetrieveUpdateDestroyAPIView):
     http_method_names = ('get', 'patch', 'delete',)
 
 
-class GenreViewSet(ListCreateDestroyViewSet):
-    """Обработчик объектов модели жанров."""
+class GenreViewSet(
+        ListCreateDestroyViewSet, DeleteBySlugMixin):
+    """Обработчик объектов модели жанров"""
 
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
 
-    def get_permissions(self):
-        """Метод получения разрешений."""
-        if self.action == 'create':
-            self.permission_classes = (IsAdminOnly,)
-        return super().get_permissions()
 
-    @action(
-        detail=False, methods=['delete'],
-        url_path='(?P<slug>[^/.]+)',
-        permission_classes=(IsAdminOnly,))
-    def delete_by_slug(self, request, slug=None):
-        """Метод удаления объекта."""
-        genre = get_object_or_404(Genre, slug=slug)
-        genre.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class CategoryViewSet(ListCreateDestroyViewSet):
-    """Обработчик объектов модели категорий."""
+class CategoryViewSet(
+        ListCreateDestroyViewSet, DeleteBySlugMixin):
+    """Обработчик объектов модели категорий"""
 
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
-
-    def get_permissions(self):
-        """Метод получения разрешений."""
-        if self.action == 'create':
-            self.permission_classes = (IsAdminOnly,)
-        return super().get_permissions()
-
-    @action(
-        detail=False, methods=['delete'],
-        url_path='(?P<slug>[^/.]+)',
-        permission_classes=(IsAdminOnly,))
-    def delete_by_slug(self, request, slug=None):
-        """Метод удаления объекта."""
-        category = get_object_or_404(Category, slug=slug)
-        category.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
