@@ -1,0 +1,326 @@
+[
+  {
+    "model": "reviews.category",
+    "pk": 1,
+    "fields": {
+      "name": "Фильмы",
+      "slug": "films"
+    }
+  },
+  {
+    "model": "reviews.category",
+    "pk": 2,
+    "fields": {
+      "name": "Книги",
+      "slug": "books"
+    }
+  },
+  {
+    "model": "reviews.category",
+    "pk": 3,
+    "fields": {
+      "name": "Музыка",
+      "slug": "music"
+    }
+  },
+  {
+    "model": "reviews.genre",
+    "pk": 1,
+    "fields": {
+      "name": "Комедия",
+      "slug": "comedy"
+    }
+  },
+  {
+    "model": "reviews.genre",
+    "pk": 2,
+    "fields": {
+      "name": "Драма",
+      "slug": "drama"
+    }
+  },
+  {
+    "model": "reviews.genre",
+    "pk": 3,
+    "fields": {
+      "name": "Ужасы",
+      "slug": "horror"
+    }
+  },
+  {
+    "model": "reviews.genre",
+    "pk": 4,
+    "fields": {
+      "name": "Триллер",
+      "slug": "thriller"
+    }
+  },
+  {
+    "model": "reviews.genre",
+    "pk": 5,
+    "fields": {
+      "name": "Вестерн",
+      "slug": "western"
+    }
+  },
+  {
+    "model": "reviews.genre",
+    "pk": 6,
+    "fields": {
+      "name": "Документальный",
+      "slug": "documentary"
+    }
+  },
+  {
+    "model": "reviews.genre",
+    "pk": 7,
+    "fields": {
+      "name": "Любовный роман",
+      "slug": "romance_novel"
+    }
+  },
+  {
+    "model": "reviews.genre",
+    "pk": 8,
+    "fields": {
+      "name": "Короткий рассказ",
+      "slug": "short_story"
+    }
+  },
+  {
+    "model": "reviews.genre",
+    "pk": 9,
+    "fields": {
+      "name": "Приключение",
+      "slug": "adventure"
+    }
+  },
+  {
+    "model": "reviews.genre",
+    "pk": 10,
+    "fields": {
+      "name": "Биография",
+      "slug": "biography"
+    }
+  },
+  {
+    "model": "reviews.genre",
+    "pk": 11,
+    "fields": {
+      "name": "Фантастика",
+      "slug": "fiction"
+    }
+  },
+  {
+    "model": "reviews.genre",
+    "pk": 12,
+    "fields": {
+      "name": "Графический роман",
+      "slug": "graphic_novel"
+    }
+  },
+  {
+    "model": "reviews.genre",
+    "pk": 13,
+    "fields": {
+      "name": "Классическая",
+      "slug": "classical"
+    }
+  },
+  {
+    "model": "reviews.genre",
+    "pk": 14,
+    "fields": {
+      "name": "Джаз",
+      "slug": "jazz"
+    }
+  },
+  {
+    "model": "reviews.genre",
+    "pk": 15,
+    "fields": {
+      "name": "Хип хоп",
+      "slug": "hip_hop"
+    }
+  },
+  {
+    "model": "reviews.genre",
+    "pk": 16,
+    "fields": {
+      "name": "Блюз",
+      "slug": "blues"
+    }
+  },
+  {
+    "model": "reviews.genre",
+    "pk": 17,
+    "fields": {
+      "name": "Рок",
+      "slug": "rock"
+    }
+  },
+  {
+    "model": "reviews.genre",
+    "pk": 18,
+    "fields": {
+      "name": "Метал",
+      "slug": "metal"
+    }
+  },
+  {
+    "model": "reviews.title",
+    "pk": 1,
+    "fields": {
+      "name": "1+1",
+      "year": 2011,
+      "description": "Пострадав в результате несчастного случая, богатый аристократ Филипп нанимает в помощники человека, который менее всего подходит для этой работы, - молодого жителя предместья Дрисса, только что освободившегося из тюрьмы. Несмотря на то, что Филипп прикован к инвалидному креслу, Дриссу удается привнести в размеренную жизнь аристократа дух приключений.",
+      "category": 1
+    }
+  },
+  {
+    "model": "reviews.title",
+    "pk": 2,
+    "fields": {
+      "name": "Интерстеллар",
+      "year": 2014,
+      "description": "Когда засуха, пыльные бури и вымирание растений приводят человечество к продовольственному кризису, коллектив исследователей и учёных отправляется сквозь червоточину (которая предположительно соединяет области пространства-времени через большое расстояние) в путешествие, чтобы превзойти прежние ограничения для космических путешествий человека и найти планету c подходящими для человечества условиями.",
+      "category": 1
+    }
+  },
+  {
+    "model": "reviews.title",
+    "pk": 3,
+    "fields": {
+      "name": "Зеленая миля",
+      "year": 1999,
+      "description": "Пол Эджкомб — начальник блока смертников в тюрьме «Холодная гора», каждый из узников которого однажды проходит «зеленую милю» по пути к месту казни. Пол повидал много заключённых и надзирателей за время работы. Однако гигант Джон Коффи, обвинённый в страшном преступлении, стал одним из самых необычных обитателей блока.",
+      "category": 1
+    }
+  },
+  {
+    "model": "reviews.title",
+    "pk": 4,
+    "fields": {
+      "name": "Побег из Шоушенка",
+      "year": 1994,
+      "description": "Бухгалтер Энди Дюфрейн обвинён в убийстве собственной жены и её любовника. Оказавшись в тюрьме под названием Шоушенк, он сталкивается c жестокостью и беззаконием, царящими по обе стороны решётки. Каждый, кто попадает в эти стены, становится их рабом до конца жизни. Но Энди, обладающий живым умом и доброй душой, находит подход как к заключённым, так и к охранникам, добиваясь их особого к себе расположения.",
+      "category": 1
+    }
+  },
+  {
+    "model": "reviews.title",
+    "pk": 5,
+    "fields": {
+      "name": "Бойцовский клуб",
+      "year": 1999,
+      "description": "Сотрудник страховой компании страдает хронической бессонницей и отчаянно пытается вырваться из мучительно скучной жизни. Однажды в очередной командировке он встречает некоего Тайлера Дёрдена — харизматического торговца мылом с извращенной философией. Тайлер уверен, что самосовершенствование — удел слабых, а единственное, ради чего стоит жить, — саморазрушение.",
+      "category": 1
+    }
+  },
+  {
+    "model": "reviews.title",
+    "pk": 6,
+    "fields": {
+      "name": "Форрест Гамп",
+      "year": 1994,
+      "description": "Сидя на автобусной остановке, Форрест Гамп — не очень умный, но добрый и открытый парень — рассказывает случайным встречным историю своей необыкновенной жизни.",
+      "category": 1
+    }
+  },
+  {
+    "model": "reviews.titlegenre",
+    "pk": 1,
+    "fields": {
+      "genre_id": 2,
+      "title_id": 1
+    }
+  },
+  {
+    "model": "reviews.titlegenre",
+    "pk": 2,
+    "fields": {
+      "genre_id": 9,
+      "title_id": 1
+    }
+  },
+  {
+    "model": "reviews.titlegenre",
+    "pk": 3,
+    "fields": {
+      "genre_id": 2,
+      "title_id": 2
+    }
+  },
+  {
+    "model": "reviews.titlegenre",
+    "pk": 4,
+    "fields": {
+      "genre_id": 11,
+      "title_id": 2
+    }
+  },
+  {
+    "model": "reviews.titlegenre",
+    "pk": 5,
+    "fields": {
+      "genre_id": 2,
+      "title_id": 3
+    }
+  },
+  {
+    "model": "reviews.titlegenre",
+    "pk": 6,
+    "fields": {
+      "genre_id": 4,
+      "title_id": 3
+    }
+  },
+  {
+    "model": "reviews.titlegenre",
+    "pk": 7,
+    "fields": {
+      "genre_id": 2,
+      "title_id": 4
+    }
+  },
+  {
+    "model": "reviews.titlegenre",
+    "pk": 8,
+    "fields": {
+      "genre_id": 9,
+      "title_id": 4
+    }
+  },
+  {
+    "model": "reviews.titlegenre",
+    "pk": 9,
+    "fields": {
+      "genre_id": 4,
+      "title_id": 5
+    }
+  },
+  {
+    "model": "reviews.titlegenre",
+    "pk": 10,
+    "fields": {
+      "genre_id": 11,
+      "title_id": 5
+    }
+  },
+  {
+    "model": "reviews.titlegenre",
+    "pk": 11,
+    "fields": {
+      "genre_id": 2,
+      "title_id": 6
+    }
+  },
+  {
+    "model": "reviews.titlegenre",
+    "pk": 12,
+    "fields": {
+      "genre_id": 11,
+      "title_id": 6
+    }
+  }
+]
