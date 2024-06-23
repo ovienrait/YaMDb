@@ -62,7 +62,7 @@ class Title(models.Model):
     class Meta:
         """Класс для сортировки объектов модели и перевода модели в админке."""
 
-        ordering = ['id',]
+        ordering = ('id',)
         verbose_name = 'произведение'
         verbose_name_plural = 'Произведения'
 
