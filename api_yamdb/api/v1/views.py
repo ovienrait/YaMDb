@@ -1,28 +1,30 @@
+"""Модуль преставлений приложения."""
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 
-from rest_framework import viewsets, filters, generics, status, views
+from rest_framework import filters, generics, status, views, viewsets
+from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import (
-    AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly)
+from rest_framework.permissions import (AllowAny, IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework.decorators import action
 
-
+from reviews.models import Category, Genre, Review, Title
 from users.models import CustomUser
-from reviews.models import Genre, Category, Title, Review
-from .permissions import IsAdminOnly, IsAdminOrReadOnly, IsOwnerOrReadOnly
+
 from .filters import TitleFilter
 from .mixins import ListCreateDestroyViewSet
-from .serializers import (
-    AdminSerializer, UserSerializer, UserSignUpSerializer,
-    GenreSerializer, CategorySerializer, TitleGETSerializer, TitleSerializer,
-    ReviewSerializer, CommentSerializer)
+from .permissions import IsAdminOnly, IsAdminOrReadOnly, IsOwnerOrReadOnly
+from .serializers import (AdminSerializer, CategorySerializer,
+                          CommentSerializer, GenreSerializer,
+                          ReviewSerializer, TitleGETSerializer,
+                          TitleSerializer, UserSerializer,
+                          UserSignUpSerializer)
 
 
 class UserSignupAPI(views.APIView):
@@ -140,13 +142,15 @@ class AdminDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 class GenreViewSet(ListCreateDestroyViewSet):
-    """Обработчик объектов модели жанров"""
+    """Обработчик объектов модели жанров."""
+
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
 
     def get_permissions(self):
+        """Метод получения разрешений."""
         if self.action == 'create':
             self.permission_classes = (IsAdminOnly,)
         return super().get_permissions()
@@ -156,19 +160,22 @@ class GenreViewSet(ListCreateDestroyViewSet):
         url_path='(?P<slug>[^/.]+)',
         permission_classes=(IsAdminOnly,))
     def delete_by_slug(self, request, slug=None):
+        """Метод удаления объекта."""
         genre = get_object_or_404(Genre, slug=slug)
         genre.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CategoryViewSet(ListCreateDestroyViewSet):
-    """Обработчик объектов модели категорий"""
+    """Обработчик объектов модели категорий."""
+
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
 
     def get_permissions(self):
+        """Метод получения разрешений."""
         if self.action == 'create':
             self.permission_classes = (IsAdminOnly,)
         return super().get_permissions()
@@ -178,42 +185,40 @@ class CategoryViewSet(ListCreateDestroyViewSet):
         url_path='(?P<slug>[^/.]+)',
         permission_classes=(IsAdminOnly,))
     def delete_by_slug(self, request, slug=None):
+        """Метод удаления объекта."""
         category = get_object_or_404(Category, slug=slug)
         category.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    """Обработчик объектов модели произведений"""
-    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
+    """Обработчик объектов модели произведений."""
+
+    queryset = Title.objects.order_by('id').annotate(
+        rating=Avg('reviews__score'))
     serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
-
-    def update(self, request, *args, **kwargs):
-        if request.method == 'PUT':
-            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        return super().update(request, *args, **kwargs)
+    http_method_names = ('get', 'post', 'patch', 'delete',)
 
     def get_serializer_class(self):
+        """Метод выбора сериализатора."""
         if self.action in ['list', 'retrieve']:
             return TitleGETSerializer
         return TitleSerializer
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    """Обработчик объектов модели комментариев"""
+    """Обработчик объектов модели комментариев."""
+
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly,)
     serializer_class = CommentSerializer
-
-    def update(self, request, *args, **kwargs):
-        if request.method == 'PUT':
-            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        return super().update(request, *args, **kwargs)
+    http_method_names = ('get', 'post', 'patch', 'delete',)
 
     def get_queryset(self):
+        """Метод получения комментариев к ревью."""
         review = get_object_or_404(
             Review,
             id=self.kwargs.get('review_id')
@@ -221,6 +226,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         return review.comments.all()
 
     def perform_create(self, serializer):
+        """Метод сохранения автора."""
         review = get_object_or_404(
             Review,
             id=self.kwargs.get('review_id')
@@ -232,16 +238,14 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    """Обработчик объектов модели отзывов"""
+    """Обработчик объектов модели отзывов."""
+
     serializer_class = ReviewSerializer
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
-
-    def update(self, request, *args, **kwargs):
-        if request.method == 'PUT':
-            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        return super().update(request, *args, **kwargs)
+    http_method_names = ('get', 'post', 'patch', 'delete',)
 
     def get_queryset(self):
+        """Метод получения ревью к произведению."""
         title = get_object_or_404(
             Title,
             id=self.kwargs.get('title_id')
@@ -249,6 +253,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return title.reviews.all()
 
     def perform_create(self, serializer):
+        """Метод сохранения автора."""
         title = get_object_or_404(
             Title,
             id=self.kwargs.get('title_id')

@@ -1,12 +1,14 @@
+"""Модуль настройки админки."""
 from django.contrib import admin
 
-from .models import Genre, Category, Title, TitleGenre, Review, Comment
+from .models import Category, Comment, Genre, Review, Title, TitleGenre
 
 OBJECTS_PER_PAGE = 10
 
 
 class GenreAdmin(admin.ModelAdmin):
-    """Класс настройки отображения раздела жанров"""
+    """Класс настройки отображения раздела жанров."""
+
     list_display = ('name', 'slug')
     ordering = ('name',)
     list_per_page = OBJECTS_PER_PAGE
@@ -14,7 +16,8 @@ class GenreAdmin(admin.ModelAdmin):
 
 
 class CategoryAdmin(admin.ModelAdmin):
-    """Класс настройки отображения раздела категорий"""
+    """Класс настройки отображения раздела категорий."""
+
     list_display = ('name', 'slug')
     ordering = ('name',)
     list_per_page = OBJECTS_PER_PAGE
@@ -22,22 +25,27 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 class TitleAdmin(admin.ModelAdmin):
-    """Класс настройки отображения раздела произведений"""
+    """Класс настройки отображения раздела произведений."""
+
     list_display = (
         'name', 'year', 'description', 'get_genre', 'category')
     empty_value_display = 'не указано'
     ordering = ('name',)
     search_fields = ('name', 'year')
 
+    @admin.display(description='жанр')
     def get_genre(self, object):
+        """Метод получения жанра."""
         return ',\n'.join((genre.name for genre in object.genre.all()))
-
-    get_genre.short_description = 'жанр'
 
 
 class TitleGenreAdmin(admin.ModelAdmin):
-    """Класс настройки отображения раздела отношений
-    произведений к жанрам"""
+    """
+    Класс TitleGenreAdmin.
+
+    Для настройки отображения раздела отношений произведений к жанрам.
+    """
+
     list_display = ('title', 'genre')
     ordering = ('title',)
     list_per_page = OBJECTS_PER_PAGE
@@ -46,6 +54,7 @@ class TitleGenreAdmin(admin.ModelAdmin):
 
 class ReviewAdmin(admin.ModelAdmin):
     """Класс настройки раздела отзывов."""
+
     list_display = (
         'pk', 'author', 'text', 'score', 'pub_date', 'title')
     list_filter = ('author', 'score', 'pub_date')
@@ -55,6 +64,7 @@ class ReviewAdmin(admin.ModelAdmin):
 
 class CommentAdmin(admin.ModelAdmin):
     """Класс настройки раздела комментариев."""
+
     list_display = (
         'pk', 'author', 'text', 'pub_date', 'review')
     list_filter = ('author', 'pub_date')
