@@ -1,3 +1,4 @@
+"""Модуль маршрутизатора приложения."""
 from django.urls import include, path
 
 urlpatterns = [
