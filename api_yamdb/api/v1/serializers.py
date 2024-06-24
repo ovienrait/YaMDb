@@ -11,8 +11,6 @@ class GenreSerializer(serializers.ModelSerializer):
     """Сериализатор для модели жанров."""
 
     class Meta:
-        """Класс для определения модели и полей."""
-
         model = Genre
         fields = ('name', 'slug')
 
@@ -21,8 +19,6 @@ class CategorySerializer(serializers.ModelSerializer):
     """Сериализатор для модели категорий."""
 
     class Meta:
-        """Класс для определения модели и полей."""
-
         model = Category
         fields = ('name', 'slug')
 
@@ -35,13 +31,10 @@ class TitleGETSerializer(serializers.ModelSerializer):
     rating = serializers.IntegerField(read_only=True)
 
     class Meta:
-        """Класс для определения модели и полей."""
-
         model = Title
         fields = (
             'id', 'name', 'year', 'rating', 'description', 'genre', 'category')
-        read_only_fields = (
-            'id', 'name', 'year', 'rating', 'description', 'genre', 'category')
+        read_only_fields = fields
 
 
 class TitleSerializer(serializers.ModelSerializer):
@@ -54,8 +47,6 @@ class TitleSerializer(serializers.ModelSerializer):
         slug_field='slug', queryset=Category.objects.all())
 
     class Meta:
-        """Класс для определения модели и полей."""
-
         model = Title
         fields = (
             'id', 'name', 'year', 'description', 'genre', 'category')
@@ -65,10 +56,28 @@ class UserSignUpSerializer(serializers.ModelSerializer):
     """Класс сериализатора для регистрации пользователя."""
 
     class Meta:
-        """Класс для определения модели и полей."""
-
         model = CustomUser
         fields = ('username', 'email',)
+
+    def validate(self, data):
+        """Метод для проведения всех необходимых проверок."""
+
+        username = data.get('username')
+        email = data.get('email')
+
+        if not data:
+            raise serializers.ValidationError(
+                {'email': ['Это обязательное поле.'], 'username': [
+                    'Это обязательное поле.']})
+        if not username:
+            raise serializers.ValidationError(
+                {'username': ['Это обязательное поле.'], })
+        if not email:
+            raise serializers.ValidationError(
+                {'email': ['Это обязательное поле.'], })
+        if username == 'me':
+            raise serializers.ValidationError('Выберите другое имя.')
+        return data
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -85,8 +94,6 @@ class UserSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        """Класс для определения модели и полей."""
-
         model = CustomUser
         fields = ('username', 'email', 'password',
                   'first_name', 'last_name', 'bio', 'role',)
@@ -110,8 +117,6 @@ class AdminSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        """Класс для определения модели и полей."""
-
         model = CustomUser
         fields = ('username', 'email', 'is_staff', 'password',
                   'first_name', 'last_name', 'bio', 'role',)
@@ -127,8 +132,6 @@ class CommentSerializer(serializers.ModelSerializer):
     review = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
-        """Класс сериализатора для определения модели и полей."""
-
         fields = '__all__'
         model = Comment
 
@@ -168,7 +171,5 @@ class ReviewSerializer(serializers.ModelSerializer):
         return value
 
     class Meta:
-        """Класс сериализатора для определения модели и полей."""
-
         fields = '__all__'
         model = Review

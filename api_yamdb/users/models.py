@@ -20,12 +20,10 @@ class CustomUser(AbstractUser):
     REQUIRED_FIELDS = ('email',)
 
     class Meta:
-        """Класс для сортировки объектов модели."""
-
         ordering = ('id',)
         verbose_name = 'пользователь'
         verbose_name_plural = 'Пользователи'
 
-        def __str__(self):
-            """Метод возвращающий имя пользователя."""
-            return self.username
+    def __str__(self):
+        """Метод возвращающий имя пользователя."""
+        return self.username

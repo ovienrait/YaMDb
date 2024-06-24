@@ -10,23 +10,27 @@ class Command(BaseCommand):
     директории в определённые модели"""
 
     def handle(self, *args, **kwargs):
-        directory = os.path.join(
-            os.path.dirname(__file__), '../../../static/data')
-        os.chdir(directory)
+        try:
+            directory = os.path.join(
+                os.path.dirname(__file__), '../../../static/data')
+            os.chdir(directory)
 
-        self.import_data('genre.csv', Genre, self.import_genre)
-        self.import_data('category.csv', Category, self.import_category)
-        self.import_data('titles.csv', Title, self.import_title)
-        self.import_data(
-            'genre_title.csv', TitleGenre, self.import_title_genre)
-        self.import_data('users.csv', CustomUser, self.import_user)
-        self.import_data('review.csv', Review, self.import_review)
-        self.import_data('comments.csv', Comment, self.import_comment)
+            self.import_data('genre.csv', self.import_genre)
+            self.import_data('category.csv', self.import_category)
+            self.import_data('titles.csv', self.import_title)
+            self.import_data('genre_title.csv', self.import_title_genre)
+            self.import_data('users.csv', self.import_user)
+            self.import_data('review.csv', self.import_review)
+            self.import_data('comments.csv', self.import_comment)
 
-        self.stdout.write(
-            self.style.SUCCESS('Импорт данных из CSV файлов завершен.'))
+            self.stdout.write(
+                self.style.SUCCESS('Импорт данных из CSV файлов завершен.'))
 
-    def import_data(self, file_name, model, import_function):
+        except Exception as e:
+            self.stdout.write(
+                self.style.ERROR(f'Произошла ошибка при импорте данных: {e}'))
+
+    def import_data(self, file_name, import_function):
         """Общий метод для импорта данных из CSV файла"""
         with open(
                 file_name, mode='r', encoding='utf-8', newline='') as csvfile:
