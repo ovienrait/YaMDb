@@ -1,4 +1,5 @@
 """Модуль преставлений приложения."""
+from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db.models import Avg
@@ -42,20 +43,14 @@ class UserSignupAPI(views.APIView):
             message=('Для получения токена перейдите по адресу'
                      '/api/v1/auth/token/ и введите код подтверждения'
                      f' confirmation_code: {confirmation_code}'),
-            from_email='api_yamdb@example.com',
+            from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[f'{request.data["email"]}'],
             fail_silently=True,
         )
 
     def post(self, request):
         """Метод для обработки пост запроса на регистрацию."""
-        if not request.data:
-            raise ValidationError({'email': ['This field is required.'],
-                                   'username': ['This field is required.']})
-        if request.data.get('username') is None:
-            raise ValidationError({'username': ['This field is required.'], })
-        if request.data.get('email') is None:
-            raise ValidationError({'email': ['This field is required.'], })
+
         if CustomUser.objects.filter(
                 username=request.data.get('username'),
                 email=request.data.get('email')
@@ -64,10 +59,6 @@ class UserSignupAPI(views.APIView):
             return Response(
                 ['Вам отправлено письмо с кодом подтверждения.'],
                 status=status.HTTP_200_OK
-            )
-        if request.data['username'] == 'me':
-            return Response(
-                ['Выберите другое имя.'], status=status.HTTP_400_BAD_REQUEST
             )
         serializer = UserSignUpSerializer(data=request.data)
         if serializer.is_valid():
@@ -85,7 +76,7 @@ class UserObtainTokenAPI(views.APIView):
     def post(self, request):
         """Метод обработки пост запроса на получение токена."""
         if not request.data or request.data.get('username') is None:
-            raise ValidationError(f"{['username']}")
+            raise ValidationError("Необходимо указать имя пользователя.")
         user = get_object_or_404(
             CustomUser, username=request.data.get('username')
         )
@@ -144,7 +135,7 @@ class GenreViewSet(
         ListCreateDestroyViewSet, DeleteBySlugMixin):
     """Обработчик объектов модели жанров"""
 
-    queryset = Genre.objects.all()
+    queryset = Genre.objects.all().order_by('name')
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
@@ -155,7 +146,7 @@ class CategoryViewSet(
         ListCreateDestroyViewSet, DeleteBySlugMixin):
     """Обработчик объектов модели категорий"""
 
-    queryset = Category.objects.all()
+    queryset = Category.objects.all().order_by('name')
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
@@ -165,8 +156,8 @@ class CategoryViewSet(
 class TitleViewSet(viewsets.ModelViewSet):
     """Обработчик объектов модели произведений."""
 
-    queryset = Title.objects.order_by('id').annotate(
-        rating=Avg('reviews__score'))
+    queryset = Title.objects.select_related('category').prefetch_related(
+        'genre').annotate(rating=Avg('reviews__score')).order_by('id')
     serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = PageNumberPagination
