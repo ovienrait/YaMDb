@@ -1,4 +1,4 @@
-# API YaMDb
+# YaMDb
 
 Review, rate, discuss — engage with your favorites!
 
